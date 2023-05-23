@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+  <dict>
+    <key>CFBundleName</key>
+    <string>CaleidoRefOO</string>
+    <key>CFBundleIdentifier</key>
+    <string>it.infomed.caleido.CaleidoRefOO</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleAllowMixedLocalizations</key>
+    <string>true</string>
+    <key>CFBundleExecutable</key>
+    <string>run.sh</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>Italy</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>calrefoo.icns</string>
+    <key>Java</key>
+    <dict>
+      <key>WorkingDirectory</key>
+      <string>$APP_PACKAGE/Contents</string>
+      <key>VMOptions</key>
+      <string>-D32 -Xms512m -Xmx512m -XX:+UseParallelGC</string>
+      <key>MainClass</key>
+      <string>it.infomed.caleido.CaleidoRefOO</string>
+      <key>JVMVersion</key>
+      <string>1.8+</string>
+      <key>Arguments</key>
+      <string>-c COO-mac.properties</string>
+      <key>ArgumentsWindows</key>
+      <string>-c COO-win.properties</string>
+      <key>ClassPath</key>
+      <array>
+        <string>$JAVAROOT/caleidoRefOO.jar</string>
+        <!-- MACRO_LISTJAR_MACRO -->
+      </array>
+    </dict>
+  </dict>
+</plist>
