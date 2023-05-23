@@ -32,6 +32,7 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void paintWindow(HDC hdc);
 void fatalError(WCHAR* errorMsg);
 DWORD WINAPI startOperazioni(LPVOID lpParam);
+JavaStubApp app;
 
 void fatalError(const WCHAR* errorMsg);
 void updateCount(int val);
@@ -272,7 +273,6 @@ DWORD WINAPI startOperazioni(LPVOID lpParam)
 {
 	try
 	{
-		JavaStubApp app;
 		if (app.startOperation())
 		{
 			// aspetta l'avvio di java per 3 secondi

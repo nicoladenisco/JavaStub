@@ -59,8 +59,19 @@ JavaStubApp::JavaStubApp()
 		LOG(5, L"argv[%d]=[%s]\n", i, __wargv[i]);
 
 	QString path(__wargv[__argc - 1]);
-	stubLocation = getParent(path);
-	stubName = getFileNameWithoutExt(path);
+
+	if (path == L"--pwd") 
+	{
+		WCHAR buffer[1024];
+		GetCurrentDirectory(1024, buffer);
+		stubLocation = buffer;
+		stubName = L"JavaStub";
+	}
+	else
+	{
+		stubLocation = getParent(path);
+		stubName = getFileNameWithoutExt(path);
+	}
 
 	LOG(1, L"stubLocation=%s\nstubName=%s\n", stubLocation.c_str(), stubName.c_str());
 }
@@ -488,18 +499,54 @@ bool JavaStubApp::extractZipToDir(QString fileZip, QString extractPath, int exti
 
 bool JavaStubApp::embeddedJvm()
 {
-	if (testForDir(javaAppRoot + L"win32/jre")) {
-		// imposta la nuova javahome
-		javaHome = javaAppRoot + L"win32/jre";
-		LOG(1, TEXT("EMBEDDED JAVA_HOME=%s\n"), javaHome);
-		return true;
+	// C:\Program Files (x86)\CaleidoRefOO\calrefoo.app\Contents\bin\win32
+
+	QString test;
+
+	if (!explicit64bit)
+	{
+		test = javaAppRoot + L"\\bin\\win32\\jre";
+		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		if (testForDir(test)) {
+			// imposta la nuova javahome
+			javaHome = test;
+			LOG(1, TEXT("EMBEDDED JAVA_HOME=%s\n"), javaHome.c_str());
+			jdkList.push_back(JavaInfo(test, 32));
+			return true;
+		}
+
+		test = javaAppRoot + L"\\bin\\win32\\jdk";
+		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		if (testForDir(test)) {
+			// imposta la nuova javahome
+			javaHome = test;
+			LOG(1, TEXT("EMBEDDED JAVA_HOME=%s\n"), javaHome.c_str());
+			jdkList.push_back(JavaInfo(test, 32));
+			return true;
+		}
 	}
 
-	if (testForDir(javaAppRoot + L"win32/jdk")) {
-		// imposta la nuova javahome
-		javaHome = javaAppRoot + L"win32/jdk";
-			LOG(1, TEXT("EMBEDDED JAVA_HOME=%s\n"), javaHome);
-		return true;
+	if (!explicit32bit)
+	{
+		test = javaAppRoot + L"\\bin\\win64\\jre";
+		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		if (testForDir(test)) {
+			// imposta la nuova javahome
+			javaHome = test;
+			LOG(1, TEXT("EMBEDDED JAVA_HOME=%s\n"), javaHome.c_str());
+			jdkList.push_back(JavaInfo(test, 64));
+			return true;
+		}
+
+		test = javaAppRoot + L"\\bin\\win64\\jdk";
+		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		if (testForDir(test)) {
+			// imposta la nuova javahome
+			javaHome = test;
+			LOG(1, TEXT("EMBEDDED JAVA_HOME=%s\n"), javaHome.c_str());
+			jdkList.push_back(JavaInfo(test, 64));
+			return true;
+		}
 	}
 
 	return false;
