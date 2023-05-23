@@ -1,2 +1,5 @@
 # JavaStub
-Java laucher
+
+## Java laucher
+Simple and minimal application to launch Java GUI program.
+
