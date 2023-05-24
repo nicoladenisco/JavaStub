@@ -958,19 +958,19 @@ bool JavaStubApp::lanciaApplicazione()
 	if ((pos = javaPgm.find(L"x86")) != QString::npos)
 	{
 		// siamo a 32 bit: rimuove (riadatta) parametri di lancio per java
-		if (VMOptions.empty() || VMOptions.find(L"AUTO") != QString::npos)
-			VMOptions = L"-D32 -Xms512m -Xmx512m -XX:+UseParallelGC";
 		if (VMOptions.empty() || VMOptions.find(L"AUTO_LARGE") != QString::npos)
 			VMOptions = L"-D32 -Xms512m -Xmx1200m -XX:+UseParallelGC";
+		if (VMOptions.empty() || VMOptions.find(L"AUTO") != QString::npos)
+			VMOptions = L"-D32 -Xms512m -Xmx512m -XX:+UseParallelGC";
 		LOG(0, L"Selezionata JVM a 32 bit: %s\n", VMOptions.c_str());
 	}
 	else
 	{
 		// siamo a 64 bit: rimuove (riadatta) parametri di lancio per java
-		if (VMOptions.empty() || VMOptions.find(L"AUTO") != QString::npos)
-			VMOptions = L"-D64 -Xms512m -Xmx512m -XX:+UseParallelGC";
 		if (VMOptions.empty() || VMOptions.find(L"AUTO_LARGE") != QString::npos)
 			VMOptions = L"-D64 -Xms512m -Xmx4g -XX:+UseParallelGC";
+		if (VMOptions.empty() || VMOptions.find(L"AUTO") != QString::npos)
+			VMOptions = L"-D64 -Xms512m -Xmx512m -XX:+UseParallelGC";
 		LOG(0, L"Selezionata JVM a 64 bit: %s\n", VMOptions.c_str());
 	}
 
