@@ -27,6 +27,9 @@
     <ClInclude Include="JavaStub.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="JavaStubApp.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JavaStub.cpp">

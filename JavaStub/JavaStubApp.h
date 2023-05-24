@@ -37,6 +37,7 @@ public:
 		Indefinito, Interno, InternoWin32, Esterno
 	};
 
+	void parseCommandLine();
 	bool scanForUpdate();
 	void scanForJavaVM();
 	void scanForJavaVM(QString startPath);
@@ -116,7 +117,7 @@ QString describeWindowsError(QString function, int errorCode);
 QString getEnvVar(QString key);
 
 #define wcsdupa(x) \
-	(wcscpy((WCHAR*)alloca(wcslen(x) * sizeof(WCHAR)), (x)))
+	(wcscpy((WCHAR*)alloca((wcslen(x)+1) * sizeof(WCHAR)), (x)))
 
 // test attributi di FindFirst/FindNext
 #define IS_DIRECTORY(x) \

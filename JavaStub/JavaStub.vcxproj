@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="JavaStub.h" />
+    <ClInclude Include="JavaStubApp.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

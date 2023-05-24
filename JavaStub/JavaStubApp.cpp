@@ -31,7 +31,7 @@ JavaStubApp::JavaStubApp()
 {
 	ptApp = this;
 	logFile = DEFAULT_LOG_FILE;
-	verbose = 10;
+	verbose = 3;
 	explicit64bit = explicit32bit = false;
 
 	// imposta directory temporanea
@@ -54,26 +54,6 @@ JavaStubApp::JavaStubApp()
 		fatalError(L"Nessun parametro sulla linea di comando.");
 		throw 0;
 	}
-
-	for (int i = 0; i < __argc; i++)
-		LOG(5, L"argv[%d]=[%s]\n", i, __wargv[i]);
-
-	QString path(__wargv[__argc - 1]);
-
-	if (path == L"--pwd") 
-	{
-		WCHAR buffer[1024];
-		GetCurrentDirectory(1024, buffer);
-		stubLocation = buffer;
-		stubName = L"JavaStub";
-	}
-	else
-	{
-		stubLocation = getParent(path);
-		stubName = getFileNameWithoutExt(path);
-	}
-
-	LOG(1, L"stubLocation=%s\nstubName=%s\n", stubLocation.c_str(), stubName.c_str());
 }
 
 JavaStubApp::JavaStubApp(QString stubLoc, QString stubNm)
@@ -82,11 +62,50 @@ JavaStubApp::JavaStubApp(QString stubLoc, QString stubNm)
 	stubName = stubNm;
 	ptApp = this;
 	logFile = DEFAULT_LOG_FILE;
-	verbose = 10;
+	verbose = 3;
 }
 
 JavaStubApp::~JavaStubApp()
 {
+}
+
+void JavaStubApp::parseCommandLine()
+{
+	for (int i = 0; i < __argc; i++)
+		LOG(5, L"argv[%d]=[%s]\n", i, __wargv[i]);
+
+	QString path(__wargv[0]);
+	stubLocation = getParent(path);
+	stubName = getFileNameWithoutExt(path);
+
+	for (int i = 1; i < __argc; i++)
+	{
+		QString s = __wargv[i];
+
+		if (s == L"--pwd")
+		{
+			WCHAR buffer[1024];
+			GetCurrentDirectory(1024, buffer);
+			stubLocation = buffer;
+			continue;
+		}
+
+		if (s == L"--verbose")
+		{
+			if ((i + 1) < __argc)
+				verbose = _wtoi(__wargv[i++]);
+
+			continue;
+		}
+
+		if (s == L"-v")
+		{
+			verbose++;
+			continue;
+		}
+	}
+
+	LOG(1, L"stubLocation=%s\nstubName=%s\n", stubLocation.c_str(), stubName.c_str());
 }
 
 int bit = 0;
@@ -506,7 +525,7 @@ bool JavaStubApp::embeddedJvm()
 	if (!explicit64bit)
 	{
 		test = javaAppRoot + L"\\bin\\win32\\jre";
-		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		LOG(5, L"Test EMBEDDED: " + test + L"\n");
 		if (testForDir(test)) {
 			// imposta la nuova javahome
 			javaHome = test;
@@ -516,7 +535,7 @@ bool JavaStubApp::embeddedJvm()
 		}
 
 		test = javaAppRoot + L"\\bin\\win32\\jdk";
-		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		LOG(5, L"Test EMBEDDED: " + test + L"\n");
 		if (testForDir(test)) {
 			// imposta la nuova javahome
 			javaHome = test;
@@ -529,7 +548,7 @@ bool JavaStubApp::embeddedJvm()
 	if (!explicit32bit)
 	{
 		test = javaAppRoot + L"\\bin\\win64\\jre";
-		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		LOG(5, L"Test EMBEDDED: " + test + L"\n");
 		if (testForDir(test)) {
 			// imposta la nuova javahome
 			javaHome = test;
@@ -539,7 +558,7 @@ bool JavaStubApp::embeddedJvm()
 		}
 
 		test = javaAppRoot + L"\\bin\\win64\\jdk";
-		LOG(2, L"Test EMBEDDED: " + test + L"\n");
+		LOG(5, L"Test EMBEDDED: " + test + L"\n");
 		if (testForDir(test)) {
 			// imposta la nuova javahome
 			javaHome = test;
@@ -718,7 +737,7 @@ bool JavaStubApp::readInfoPlist()
 		if (knome == L"key")
 		{
 			QString ktext = ele->value();
-			LOG(2, L"key %s->%s\n", knome.c_str(), ktext.c_str());
+			LOG(5, L"key %s->%s\n", knome.c_str(), ktext.c_str());
 
 			if (ktext == L"Java")
 			{
@@ -726,7 +745,7 @@ bool JavaStubApp::readInfoPlist()
 					return false;
 
 				javaProps = ele;
-				LOG(2, L"javaProps (%s)\n", ele->name());
+				LOG(5, L"javaProps (%s)\n", ele->name());
 			}
 			else
 			{
@@ -735,7 +754,7 @@ bool JavaStubApp::readInfoPlist()
 
 				QString snome = ele->name();
 				QString stext = ele->value();
-				LOG(2, L"string %s->%s\n", snome.c_str(), stext.c_str());
+				LOG(5, L"string %s->%s\n", snome.c_str(), stext.c_str());
 
 				if (ktext == L"CFBundleName")
 				{
@@ -761,7 +780,7 @@ bool JavaStubApp::readInfoPlist()
 			if (knome == L"key")
 			{
 				QString ktext = ele->value();
-				LOG(2, L"key %s->%s\n", knome.c_str(), ktext.c_str());
+				LOG(5, L"key %s->%s\n", knome.c_str(), ktext.c_str());
 
 				if (ktext != L"ClassPath")
 				{
@@ -770,7 +789,7 @@ bool JavaStubApp::readInfoPlist()
 
 					QString snome = ele->name();
 					QString stext = ele->value();
-					LOG(2, L"string %s->%s\n", snome.c_str(), stext.c_str());
+					LOG(5, L"string %s->%s\n", snome.c_str(), stext.c_str());
 
 					if (ktext == L"VMOptions")
 					{
@@ -781,10 +800,14 @@ bool JavaStubApp::readInfoPlist()
 			}
 		}
 
-		if (VMOptions.find(L"-D64") != QString::npos)
+		if (VMOptions.find(L"-D64") != QString::npos) {
 			explicit64bit = true;
-		if (VMOptions.find(L"-D32") != QString::npos)
+			LOG(1, L"VMOptions contiene -D64: solo JVM a 64 bit verranno utilizzate.\n");
+		}
+		else if (VMOptions.find(L"-D32") != QString::npos) {
 			explicit32bit = true;
+			LOG(1, L"VMOptions contiene -D32: solo JVM a 32 bit verranno utilizzate.\n");
+		}
 	}
 
 	return true;
@@ -805,7 +828,7 @@ bool JavaStubApp::lanciaApplicazione()
 		if (knome == L"key")
 		{
 			QString ktext = ele->value();
-			LOG(2, L"key %s->%s\n", knome.c_str(), ktext.c_str());
+			LOG(5, L"key %s->%s\n", knome.c_str(), ktext.c_str());
 
 			if (ktext != L"ClassPath")
 			{
@@ -814,7 +837,7 @@ bool JavaStubApp::lanciaApplicazione()
 
 				QString snome = ele->name();
 				QString stext = ele->value();
-				LOG(2, L"string %s->%s\n", snome.c_str(), stext.c_str());
+				LOG(5, L"string %s->%s\n", snome.c_str(), stext.c_str());
 
 				if (ktext == L"WorkingDirectory")
 				{
@@ -936,6 +959,8 @@ bool JavaStubApp::lanciaApplicazione()
 	{
 		// siamo a 32 bit: rimuove (riadatta) parametri di lancio per java
 		if (VMOptions.empty() || VMOptions.find(L"AUTO") != QString::npos)
+			VMOptions = L"-D32 -Xms512m -Xmx512m -XX:+UseParallelGC";
+		if (VMOptions.empty() || VMOptions.find(L"AUTO_LARGE") != QString::npos)
 			VMOptions = L"-D32 -Xms512m -Xmx1200m -XX:+UseParallelGC";
 		LOG(0, L"Selezionata JVM a 32 bit: %s\n", VMOptions.c_str());
 	}
@@ -943,6 +968,8 @@ bool JavaStubApp::lanciaApplicazione()
 	{
 		// siamo a 64 bit: rimuove (riadatta) parametri di lancio per java
 		if (VMOptions.empty() || VMOptions.find(L"AUTO") != QString::npos)
+			VMOptions = L"-D64 -Xms512m -Xmx512m -XX:+UseParallelGC";
+		if (VMOptions.empty() || VMOptions.find(L"AUTO_LARGE") != QString::npos)
 			VMOptions = L"-D64 -Xms512m -Xmx4g -XX:+UseParallelGC";
 		LOG(0, L"Selezionata JVM a 64 bit: %s\n", VMOptions.c_str());
 	}
