@@ -33,6 +33,7 @@ JavaStubApp::JavaStubApp()
 	logFile = DEFAULT_LOG_FILE;
 	verbose = 3;
 	explicit64bit = explicit32bit = false;
+	bufferXmlAllFile = NULL;
 
 	// imposta directory temporanea
 	dirTmp = L"c:\\temp";
@@ -63,10 +64,14 @@ JavaStubApp::JavaStubApp(QString stubLoc, QString stubNm)
 	ptApp = this;
 	logFile = DEFAULT_LOG_FILE;
 	verbose = 3;
+	explicit64bit = explicit32bit = false;
+	bufferXmlAllFile = NULL;
 }
 
 JavaStubApp::~JavaStubApp()
 {
+	if (bufferXmlAllFile != NULL)
+		free(bufferXmlAllFile);
 }
 
 void JavaStubApp::parseCommandLine()
@@ -93,7 +98,15 @@ void JavaStubApp::parseCommandLine()
 		if (s == L"--verbose")
 		{
 			if ((i + 1) < __argc)
-				verbose = _wtoi(__wargv[i++]);
+				verbose = _wtoi(__wargv[++i]);
+
+			continue;
+		}
+
+		if (s == L"--name")
+		{
+			if ((i + 1) < __argc)
+				stubName = __wargv[++i];
 
 			continue;
 		}
@@ -773,7 +786,8 @@ bool JavaStubApp::readInfoPlist()
 
 	if (javaProps != NULL)
 	{
-		QString VMOptions;
+		WorkingDirectory = javaAppRoot;
+
 		for (XmlNode* ele = javaProps->first_node(); ele != NULL; ele = ele->next_sibling())
 		{
 			QString knome = ele->name();
@@ -791,14 +805,79 @@ bool JavaStubApp::readInfoPlist()
 					QString stext = ele->value();
 					LOG(5, L"string %s->%s\n", snome.c_str(), stext.c_str());
 
+					if (ktext == L"WorkingDirectory")
+					{
+						WorkingDirectory = replaceAll(stext, L"$APP_PACKAGE", javaAppPath);
+						continue;
+					}
 					if (ktext == L"VMOptions")
 					{
 						VMOptions = stext;
 						continue;
 					}
+					if (ktext == L"VMOptions-" + stubName)
+					{
+						VMOptions = stext;
+						continue;
+					}
+					if (ktext == L"MainClass")
+					{
+						MainClass = stext;
+						continue;
+					}
+					if (ktext == L"MainClass-" + stubName)
+					{
+						MainClass = stext;
+						continue;
+					}
+					if (ktext == L"JVMVersion")
+					{
+						JVMVersion = stext;
+						continue;
+					}
+					if (ktext == L"Arguments")
+					{
+						if (!stext.empty())
+							Arguments = replaceAll(replaceAll(stext, L"-mac.", L"-win."), L"$APP_PACKAGE", javaAppPath);
+						continue;
+					}
+					if (ktext == L"ArgumentsWindows")
+					{
+						if (!stext.empty())
+							Arguments = replaceAll(stext, L"$APP_PACKAGE", javaAppPath);
+						continue;
+					}
+					if (ktext == L"Arguments-" + stubName)
+					{
+						if (!stext.empty())
+							Arguments = replaceAll(replaceAll(stext, L"-mac.", L"-win."), L"$APP_PACKAGE", javaAppPath);
+						continue;
+					}
+					if (ktext == L"ArgumentsWindows-" + stubName)
+					{
+						if (!stext.empty())
+							Arguments = replaceAll(stext, L"$APP_PACKAGE", javaAppPath);
+						continue;
+					}
+				}
+				else
+				{
+					// parsing della classpath
+					XmlNode* array = javaProps->first_node(L"array");
+
+					for (XmlNode* ea = array->first_node(); ea != NULL; ea = ea->next_sibling())
+					{
+						QString stext = replaceAll(ea->value(), L"$JAVAROOT", L"Resources/Java");
+						ClassPath.append(L";");
+						ClassPath.append(stext);
+					}
 				}
 			}
 		}
+
+		// preparazione finale della ClassPath
+		if (!ClassPath.empty())
+			ClassPath = ClassPath.substr(1);
 
 		if (VMOptions.find(L"-D64") != QString::npos) {
 			explicit64bit = true;
@@ -815,86 +894,6 @@ bool JavaStubApp::readInfoPlist()
 
 bool JavaStubApp::lanciaApplicazione()
 {
-	QString WorkingDirectory = javaAppRoot;
-	QString VMOptions;
-	QString MainClass;
-	QString JVMVersion;
-	QString Arguments;
-	QString ClassPath;
-
-	for (XmlNode *ele = javaProps->first_node(); ele != NULL; ele = ele->next_sibling())
-	{
-		QString knome = ele->name();
-		if (knome == L"key")
-		{
-			QString ktext = ele->value();
-			LOG(5, L"key %s->%s\n", knome.c_str(), ktext.c_str());
-
-			if (ktext != L"ClassPath")
-			{
-				if ((ele = ele->next_sibling()) == NULL)
-					break;
-
-				QString snome = ele->name();
-				QString stext = ele->value();
-				LOG(5, L"string %s->%s\n", snome.c_str(), stext.c_str());
-
-				if (ktext == L"WorkingDirectory")
-				{
-					WorkingDirectory = replaceAll(stext, L"$APP_PACKAGE", javaAppPath);
-					continue;
-				}
-				if (ktext == L"VMOptions")
-				{
-					VMOptions = stext;
-					continue;
-				}
-				if (ktext == L"MainClass")
-				{
-					MainClass = stext;
-					continue;
-				}
-				if (ktext == L"MainClass-" + stubName)
-				{
-					MainClass = stext;
-					continue;
-				}
-				if (ktext == L"JVMVersion")
-				{
-					JVMVersion = stext;
-					continue;
-				}
-				if (ktext == L"Arguments")
-				{
-					Arguments = replaceAll(replaceAll(stext, L"-mac.", L"-win."), L"$APP_PACKAGE", javaAppPath);
-					continue;
-				}
-				if (ktext == L"ArgumentsWindows")
-				{
-					if (!stext.empty())
-						Arguments = replaceAll(stext, L"$APP_PACKAGE", javaAppPath);
-					continue;
-				}
-			}
-			else
-			{
-				// parsing della classpath
-				XmlNode *array = javaProps->first_node(L"array");
-
-				for (XmlNode *ea = array->first_node(); ea != NULL; ea = ea->next_sibling())
-				{
-					QString stext = replaceAll(ea->value(), L"$JAVAROOT", L"Resources/Java");
-					ClassPath.append(L";");
-					ClassPath.append(stext);
-				}
-			}
-		}
-	}
-
-	// preparazione finale della ClassPath
-	if (!ClassPath.empty())
-		ClassPath = ClassPath.substr(1);
-
 	if (explicit64bit)
 	{
 		// richiesta esplicita di una JVM a 64 bit: cerchiamo la più recente a 64 bit

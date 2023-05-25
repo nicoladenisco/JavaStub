@@ -95,6 +95,7 @@ private:
 	int verbose;
 	WCHAR *bufferXmlAllFile;
 	bool explicit64bit, explicit32bit;
+	QString WorkingDirectory, VMOptions, MainClass, JVMVersion, Arguments, ClassPath;
 };
 
 extern JavaStubApp *ptApp;

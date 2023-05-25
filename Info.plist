@@ -28,6 +28,8 @@
       <string>$APP_PACKAGE/Contents</string>
       <key>VMOptions</key>
       <string>-D32 -Xms512m -Xmx512m -XX:+UseParallelGC</string>
+      <key>VMOptions-calrefoo</key>
+      <string>-D32 -Xms512m -Xmx512m -XX:+UseParallelGC</string>
       <key>MainClass</key>
       <string>it.infomed.caleido.CaleidoRefOO</string>
       <key>JVMVersion</key>

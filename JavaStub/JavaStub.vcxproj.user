@@ -3,6 +3,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>C:\Program Files (x86)\CaleidoRefOO</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--pwd</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--pwd --name calrefoo</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>
