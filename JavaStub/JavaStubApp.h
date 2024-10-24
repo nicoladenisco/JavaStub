@@ -66,6 +66,7 @@ public:
 	QString getFileNameWithoutExt(QString path);
 	QStringList getListDirs(QString path);
 	QStringList getListFiles(QString path);
+	bool getListFiles(QStringList& topopulate, QString pathSearch, QString pathStore, QString patten, bool recurse);
 
 	RunEnv testEnvironment();
 	QString findJavaApp(QString dir);
@@ -79,6 +80,7 @@ public:
 	bool execute(QString program, QStringList argument, bool waitExit = true, QString currentDir = L"");
 	bool isRunAsAdministrator();
 	bool elevateNow();
+	bool loadClassPathAuto(QString pathSearch, QString pathStore);
 
 	QString convertPathToCygwin(QString path);
 	QString convertPathFromCygwin(QString path);
@@ -94,8 +96,8 @@ private:
 	XmlNode *javaProps;
 	int verbose;
 	WCHAR *bufferXmlAllFile;
-	bool explicit64bit, explicit32bit;
-	QString WorkingDirectory, VMOptions, MainClass, JVMVersion, Arguments, ClassPath;
+	bool explicit64bit, explicit32bit, autoScanJars;
+	QString WorkingDirectory, VMOptions, MainClass, JVMVersion, Arguments, ClassPath, autoScanJarsDirectory;
 };
 
 extern JavaStubApp *ptApp;

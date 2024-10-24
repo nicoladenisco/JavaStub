@@ -32,7 +32,7 @@ JavaStubApp::JavaStubApp()
 	ptApp = this;
 	logFile = DEFAULT_LOG_FILE;
 	verbose = 3;
-	explicit64bit = explicit32bit = false;
+	explicit64bit = explicit32bit = autoScanJars = false;
 	bufferXmlAllFile = NULL;
 
 	// imposta directory temporanea
@@ -859,6 +859,13 @@ bool JavaStubApp::readInfoPlist()
 							Arguments = replaceAll(stext, L"$APP_PACKAGE", javaAppPath);
 						continue;
 					}
+
+					if (ktext == L"ClassPathAuto")
+					{
+						// caricamento automatico della classpath cercando tutti i jars nella directory Resources/Java
+						autoScanJars = true;
+						autoScanJarsDirectory = replaceAll(stext, L"$JAVAROOT", javaAppRoot + L"/Resources/Java");
+					}
 				}
 				else
 				{
@@ -952,6 +959,7 @@ bool JavaStubApp::lanciaApplicazione()
 	ClassPath = replaceAll(ClassPath, L"/", L"\\");
 	Arguments = replaceAll(Arguments, L"/", L"\\");
 	WorkingDirectory = replaceAll(WorkingDirectory, L"/", L"\\");
+	autoScanJarsDirectory = replaceAll(autoScanJarsDirectory, L"/", L"\\");
 
 	int pos;
 	if ((pos = javaPgm.find(L"x86")) != QString::npos)
@@ -972,6 +980,9 @@ bool JavaStubApp::lanciaApplicazione()
 			VMOptions = L"-D64 -Xms512m -Xmx512m -XX:+UseParallelGC";
 		LOG(0, L"Selezionata JVM a 64 bit: %s\n", VMOptions.c_str());
 	}
+
+	if(autoScanJars)
+		loadClassPathAuto(autoScanJarsDirectory, L"Resources\\java");
 
 	QStringList arguments;
 	arguments.append(splitParams(VMOptions));
@@ -1365,7 +1376,7 @@ QString describeWindowsError(QString function, int errorCode)
 		0, NULL);
 
 	WCHAR buffer[1024];
-	wsprintf(buffer, TEXT("%s failed with error %d: %s"), function.c_str(), errorCode, lpMsgBuf);
+	swprintf(buffer, sizeof(buffer), L"%s failed with error %d: %s", function.c_str(), errorCode, (wchar_t const*)lpMsgBuf);
 
 	LocalFree(lpMsgBuf);
 	return buffer;
@@ -1466,3 +1477,64 @@ bool JavaStubApp::elevateNow()
 	return true;
 }
 
+bool JavaStubApp::loadClassPathAuto(QString pathSearch, QString pathStore)
+{
+	QStringList jars;
+	getListFiles(jars, pathSearch, pathStore, L"*.jar", true);
+
+	boolean first = true;
+	for (QString var : jars)
+	{
+		if(!first)
+			ClassPath.append(L";");
+
+		ClassPath.append(var);
+		first = false;
+	}
+
+	return true;
+}
+
+bool JavaStubApp::getListFiles(QStringList& topopulate, QString pathSearch, QString pathStore, QString pattern, bool recurse)
+{
+	WIN32_FIND_DATA fdata;
+	HANDLE h = FindFirstFile((pathSearch + L"\\" + pattern).c_str(), &fdata);
+	if (h == INVALID_HANDLE_VALUE)
+		return false;
+
+	do
+	{
+		if (IS_FILE(fdata.dwFileAttributes))
+		{
+			// memorizza per ritorno
+			topopulate.push_back(pathStore + L"\\" + fdata.cFileName);
+		}
+
+	} while (FindNextFile(h, &fdata));
+	FindClose(h);
+
+	if (recurse)
+	{
+		h = FindFirstFile((pathSearch + L"\\*.*").c_str(), &fdata);
+		if (h == INVALID_HANDLE_VALUE)
+			return false;
+
+		do
+		{
+			if (IS_DIRECTORY(fdata.dwFileAttributes))
+			{
+				QString fileName(fdata.cFileName);
+
+				if (fileName == L"." || fileName == L"..")
+					continue;
+
+				// chiamata ricorsiva
+				getListFiles(topopulate, pathSearch + L"\\" + fileName, pathStore + L"\\" + fileName, pattern, recurse);
+			}
+
+		} while (FindNextFile(h, &fdata));
+		FindClose(h);
+	}
+
+	return true;
+}

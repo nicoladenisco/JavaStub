@@ -1,0 +1,15 @@
+﻿  JavaInfo.cpp
+  JavaStub.cpp
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStub.cpp(285,3): error C4235: utilizzata estensione non standard: parola chiave '__asm' non supportata in questa architettura
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStub.cpp(285,8): error C2065: 'nop': identificatore non dichiarato
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStub.cpp(286,2): error C2143: errore di sintassi: ';' mancante prima di '}'
+  JavaStubApp.cpp
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(375,12): warning C4267: 'inizializzazione': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(888,25): warning C4267: '=': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(1140,30): warning C4267: '=': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(1149,30): warning C4267: '=': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(1158,30): warning C4267: '=': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(1160,30): warning C4267: '=': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(1217,10): warning C4267: 'inizializzazione': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+C:\Users\nicola.denisco\source\repos\JavaStub\JavaStub\JavaStubApp.cpp(1226,10): warning C4267: 'inizializzazione': conversione da 'size_t' a 'int'. Possibile perdita di dati.
+  Generazione del codice in corso...
