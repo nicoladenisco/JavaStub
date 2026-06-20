@@ -6,28 +6,29 @@ class JavaInfo
 {
 public:
 	JavaInfo();
-	JavaInfo(const QString& s, int bit);
-	JavaInfo(const JavaInfo& copy);
-	virtual ~JavaInfo();
+	JavaInfo(const QString& path, int bit);
 
-	inline int compare(const JavaInfo& ji) const {
-		if (ji.v1 != v1)
-			return ji.v1 - v1;
-		if (ji.v2 != v2)
-			return ji.v2 - v2;
-		if (ji.v2 != v2)
-			return ji.v3 - v3;
-		if (ji.v4 != v4)
-			return ji.v4 - v4;
-		return ji.path.compare(path);
+	int compareVersion(const JavaInfo& ji) const;
+	void parseVersionParts(const QString& version, const QString& separator = L"\\.");
+
+	inline int compare(const JavaInfo& ji) const
+	{
+		int cmp = compareVersion(ji);
+		if (cmp != 0)
+			return cmp;
+
+		return path.compare(ji.path);
 	}
 
-	inline int operator < (const JavaInfo& ji) const {
+	inline bool operator < (const JavaInfo& ji) const
+	{
 		return compare(ji) < 0;
 	}
 
 public:
-	QString path, tipo;
-	int v1, v2, v3, v4, bit;
+	QString path;
+	QString tipo;
+	std::vector<int> v;
+	int bit;
 };
 

@@ -55,7 +55,6 @@ public:
 	bool copyDir(QString originDir, QString destDir, bool deleteOrigin);
 	void copyDir(QString originDir, QString destDir, int& count, int total, bool recursive);
 	bool extractZipToDir(QString fileZip, QString extractPath, int extimatedNumFiles = 100);
-	bool extractJvm();
 	bool embeddedJvm();
 	bool verifyToIgnore(const QString& toIgnore) const;
 

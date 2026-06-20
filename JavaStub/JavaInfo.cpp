@@ -2,35 +2,69 @@
 #include "JavaInfo.h"
 
 JavaInfo::JavaInfo()
-{
-}
-
-JavaInfo::JavaInfo(const JavaInfo& copy)
-	: path(copy.path), tipo(copy.tipo),
-	v1(copy.v1), v2(copy.v2), v3(copy.v3), v4(copy.v4), bit(copy.bit)
+	: bit(0)
 {
 }
 
 JavaInfo::JavaInfo(const QString& s, int __bit)
+	: path(s), bit(__bit)
 {
-	path = s;
-	bit = __bit;
-	std::wregex pc2w(L"^.+\\\\([a-z]{3})([0-9]+)\\.([0-9]+)\\.([0-9]+)_([0-9]+)$", std::regex_constants::icase);
+	std::wregex oldStyle(L"^.+\\\\(jdk|jre)([0-9]+)\\.([0-9]+)\\.([0-9]+)_([0-9]+)$", std::regex_constants::icase);
+	std::wregex newStyle(L"^.+\\\\(jdk|jre)-([0-9.]+).*$", std::regex_constants::icase);
 
 	std::wcmatch cm;
-	if (!std::regex_match(s.c_str(), cm, pc2w))
-		return;
+	if (std::regex_match(s.c_str(), cm, oldStyle))
+	{
+		if (cm.size() >= 6)
+		{
+			tipo = cm[1];
+			v.push_back(_wtoi(QString(cm[2]).c_str()));
+			v.push_back(_wtoi(QString(cm[3]).c_str()));
+			v.push_back(_wtoi(QString(cm[4]).c_str()));
+			v.push_back(_wtoi(QString(cm[5]).c_str()));
+			return;
+		}
+	}
 
-	if (cm.size() < 5)
-		return;
-
-	tipo = cm[1];
-	v1 = _wtoi(QString(cm[2]).c_str());
-	v2 = _wtoi(QString(cm[3]).c_str());
-	v3 = _wtoi(QString(cm[4]).c_str());
-	v4 = _wtoi(QString(cm[5]).c_str());
+	if (std::regex_match(s.c_str(), cm, newStyle))
+	{
+		if (cm.size() >= 3)
+		{
+			tipo = cm[1];
+			parseVersionParts(QString(cm[2]));
+		}
+	}
 }
 
-JavaInfo::~JavaInfo()
+int JavaInfo::compareVersion(const JavaInfo& ji) const
 {
+	size_t num = v.size() > ji.v.size() ? v.size() : ji.v.size();
+
+	for (size_t i = 0; i < num; i++)
+	{
+		int k1 = i < v.size() ? v[i] : 0;
+		int k2 = i < ji.v.size() ? ji.v[i] : 0;
+
+		if (k1 > k2)
+			return 1;
+
+		if (k1 < k2)
+			return -1;
+	}
+
+	return 0;
 }
+
+void JavaInfo::parseVersionParts(const QString& version, const QString& separator)
+{
+	std::wregex rgx(separator);
+	std::wsregex_token_iterator iter(version.begin(), version.end(), rgx, -1);
+	std::wsregex_token_iterator end;
+
+	while (iter != end)
+	{
+		v.push_back(_wtoi(QString(*iter).c_str()));
+		++iter;
+	}
+}
+
